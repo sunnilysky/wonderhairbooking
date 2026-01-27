@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>預約紀錄（美髮）</title>
+  <title>Wonder Hair</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <style>
     :root {
@@ -474,6 +474,132 @@
       padding: 10px 4px;
     }
 
+    /* 月曆視圖（覆蓋層） */
+    .calendar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .calendar-card {
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 35px rgba(15,23,42,0.25);
+      display: flex;
+      flex-direction: column;
+      padding: 10px 12px 10px;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .calendar-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .calendar-nav button {
+      border: none;
+      background: #f3f4f6;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .calendar-close {
+      border: none;
+      background: #f3f4f6;
+      border-radius: 999px;
+      font-size: 11px;
+      padding: 3px 8px;
+      color: var(--text-sub);
+      margin-left: 6px;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      font-size: 11px;
+      color: var(--text-sub);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .calendar-day {
+      border-radius: 10px;
+      padding: 4px 2px;
+      text-align: center;
+      min-height: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid transparent;
+      color: var(--text-sub);
+    }
+
+    .calendar-day-other {
+      opacity: 0.25;
+    }
+
+    .calendar-day-today {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .calendar-day-has {
+      position: relative;
+      color: #111827;
+      font-weight: 500;
+    }
+
+    .calendar-day-has::after {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 999px;
+      background: #22c55e;
+      position: absolute;
+      bottom: 3px;
+      right: 8px;
+    }
+
+    .calendar-footer {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
     @media (max-width: 360px) {
       header h1 {
         font-size: 20px;
@@ -487,7 +613,7 @@
 <body>
 <div class="app">
   <header>
-    <h1>預約紀錄（美髮）</h1>
+    <h1>Wonder Hair 預約紀錄</h1>
     <p>在手機上快速記錄／查看客人預約（資料只存在這支手機）</p>
   </header>
 
@@ -509,18 +635,24 @@
         </div>
       </div>
 
-      <div class="field">
-        <label>服務項目 *</label>
-        <select id="service" required>
-          <option value="">請選擇</option>
-          <option>剪髮</option>
-          <option>洗剪</option>
-          <option>染髮</option>
-          <option>燙髮</option>
-          <option>護髮</option>
-          <option>頭皮護理</option>
-          <option>其他</option>
-        </select>
+      <div class="field-half-row">
+        <div class="field">
+          <label>服務項目 *</label>
+          <select id="service" required>
+            <option value="">請選擇</option>
+            <option>剪髮</option>
+            <option>洗剪</option>
+            <option>染髮</option>
+            <option>燙髮</option>
+            <option>護髮</option>
+            <option>頭皮護理</option>
+            <option>其他</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>預估時間（分鐘，選填）</label>
+          <input id="duration" type="number" min="0" step="5" placeholder="例：90" />
+        </div>
       </div>
 
       <div class="field">
@@ -541,7 +673,10 @@
         <button class="tab active" data-tab="today">今天</button>
         <button class="tab" data-tab="all">全部</button>
       </div>
-      <button id="openDashboard" class="btn-link-small">日期儀表板</button>
+      <div style="display: flex; gap: 4px;">
+        <button id="openCalendar" class="btn-link-small">月曆</button>
+        <button id="openDashboard" class="btn-link-small">日期儀表板</button>
+      </div>
     </div>
 
     <div id="quickSummary" class="quick-summary">
@@ -561,6 +696,33 @@
 
     <div id="appointments" class="appointments"></div>
   </div>
+  </div>
+</div>
+
+<!-- 月曆覆蓋層 -->
+<div id="calendarOverlay" class="calendar-overlay">
+  <div class="calendar-card">
+    <div class="calendar-header">
+      <div class="calendar-title" id="calendarTitle">月曆</div>
+      <div class="calendar-nav">
+        <button id="calendarPrev">&lt; 上個月</button>
+        <button id="calendarNext">下個月 &gt;</button>
+        <button id="calendarClose" class="calendar-close">關閉</button>
+      </div>
+    </div>
+    <div class="calendar-weekdays">
+      <div>日</div>
+      <div>一</div>
+      <div>二</div>
+      <div>三</div>
+      <div>四</div>
+      <div>五</div>
+      <div>六</div>
+    </div>
+    <div id="calendarGrid" class="calendar-grid"></div>
+    <div class="calendar-footer" id="calendarFooter">
+      點擊日期可查看當日預約，並自動帶入表單日期。
+    </div>
   </div>
 </div>
 
@@ -614,6 +776,7 @@
   const timeInput = document.getElementById('time');
   const serviceInput = document.getElementById('service');
   const noteInput = document.getElementById('note');
+  const durationInput = document.getElementById('duration');
   const editingIdInput = document.getElementById('editingId');
   const submitText = document.getElementById('submitText');
 
@@ -629,12 +792,26 @@
   const dashboardSummary = document.getElementById('dashboardSummary');
   const dashboardList = document.getElementById('dashboardList');
 
+  const calendarOverlay = document.getElementById('calendarOverlay');
+  const calendarTitle = document.getElementById('calendarTitle');
+  const calendarGrid = document.getElementById('calendarGrid');
+  const calendarPrev = document.getElementById('calendarPrev');
+  const calendarNext = document.getElementById('calendarNext');
+  const calendarClose = document.getElementById('calendarClose');
+
   let currentTab = 'today';
   let appointments = loadAppointments();
+  let calendarYear;
+  let calendarMonth; // 0-11
 
   // 預設日期為今天
   dateInput.value = getTodayStr();
   dashboardDateInput.value = getTodayStr();
+  (function initCalendarYM() {
+    const d = new Date();
+    calendarYear = d.getFullYear();
+    calendarMonth = d.getMonth();
+  })();
 
   function updateQuickSummary() {
     const today = getTodayStr();
@@ -717,7 +894,10 @@
         <div class="item-header">
           <div>
             <div class="item-name">${escapeHtml(item.name)}</div>
-            <div class="item-service">${escapeHtml(item.service)}</div>
+            <div class="item-service">
+              ${escapeHtml(item.service)}
+              ${item.duration ? ` · 預估 ${escapeHtml(item.duration)} 分鐘` : ''}
+            </div>
           </div>
           <div style="text-align: right;">
             <div class="item-time">${item.time ? item.time : ''}</div>
@@ -745,6 +925,112 @@
 
       appointmentsEl.appendChild(div);
     });
+  }
+
+  function renderCalendar() {
+    const base = new Date(calendarYear, calendarMonth, 1);
+    const year = base.getFullYear();
+    const month = base.getMonth(); // 0-11
+
+    calendarTitle.textContent = `${year} 年 ${month + 1} 月`;
+
+    // 計算當月資料
+    const firstDay = new Date(year, month, 1).getDay(); // 0(日) - 6(六)
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prevMonthDays = new Date(year, month, 0).getDate();
+
+    // 把所有預約依日期彙整成 map
+    const countMap = {};
+    appointments.forEach(a => {
+      if (!a.date) return;
+      countMap[a.date] = (countMap[a.date] || 0) + 1;
+    });
+
+    calendarGrid.innerHTML = '';
+
+    const cells = 42; // 6 週 * 7 天
+    for (let i = 0; i < cells; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'calendar-day';
+
+      let displayDay;
+      let cellYear = year;
+      let cellMonth = month;
+      let inCurrentMonth = true;
+
+      if (i < firstDay) {
+        // 上一個月
+        displayDay = prevMonthDays - (firstDay - 1 - i);
+        inCurrentMonth = false;
+        if (month === 0) {
+          cellYear = year - 1;
+          cellMonth = 11;
+        } else {
+          cellMonth = month - 1;
+        }
+      } else if (i >= firstDay + daysInMonth) {
+        // 下一個月
+        displayDay = i - (firstDay + daysInMonth) + 1;
+        inCurrentMonth = false;
+        if (month === 11) {
+          cellYear = year + 1;
+          cellMonth = 0;
+        } else {
+          cellMonth = month + 1;
+        }
+      } else {
+        // 本月
+        displayDay = i - firstDay + 1;
+      }
+
+      const mm = String(cellMonth + 1).padStart(2, '0');
+      const dd = String(displayDay).padStart(2, '0');
+      const dateStr = `${cellYear}-${mm}-${dd}`;
+
+      cell.textContent = displayDay;
+
+      if (!inCurrentMonth) {
+        cell.classList.add('calendar-day-other');
+      }
+
+      const todayStr = getTodayStr();
+      if (dateStr === todayStr) {
+        cell.classList.add('calendar-day-today');
+      }
+
+      if (countMap[dateStr]) {
+        cell.classList.add('calendar-day-has');
+      }
+
+      cell.addEventListener('click', () => {
+        // 點日期：1) 更新主畫面列表為該日（暫時視為 "今天"） 2) 表單日期帶入 3) 開啟該日的儀表板
+        dateInput.value = dateStr;
+        dashboardDateInput.value = dateStr;
+
+        // 臨時將「今天」視為選擇日來看列表
+        const originalGetTodayStr = getTodayStr;
+        window._origGetTodayStr = originalGetTodayStr;
+
+        // 用閉包包住選擇日
+        const selected = dateStr;
+        window.getTodayStr = function () {
+          return selected;
+        };
+
+        currentTab = 'today';
+        tabs.forEach(t => {
+          t.classList.toggle('active', t.dataset.tab === 'today');
+        });
+        render();
+
+        // 還原 today 函式
+        window.getTodayStr = originalGetTodayStr;
+
+        calendarOverlay.style.display = 'none';
+      });
+
+      calendarGrid.appendChild(cell);
+    }
   }
 
   function renderDashboard(dateStr) {
@@ -778,7 +1064,10 @@
           <div class="dashboard-item-name">${escapeHtml(item.name)}</div>
           <div class="dashboard-item-time">${item.time || ''}</div>
         </div>
-        <div class="dashboard-item-service">${escapeHtml(item.service)}</div>
+        <div class="dashboard-item-service">
+          ${escapeHtml(item.service)}
+          ${item.duration ? ` · 預估 ${escapeHtml(item.duration)} 分鐘` : ''}
+        </div>
       `;
       dashboardList.appendChild(div);
     });
@@ -798,6 +1087,7 @@
     const date = dateInput.value;
     const time = timeInput.value;
     const service = serviceInput.value;
+    const duration = durationInput.value.trim();
     const note = noteInput.value.trim();
     const editingId = editingIdInput.value;
 
@@ -810,14 +1100,14 @@
       // 編輯
       appointments = appointments.map(a => {
         if (a.id === editingId) {
-          return { ...a, name, date, time, service, note };
+          return { ...a, name, date, time, service, note, duration };
         }
         return a;
       });
     } else {
       // 新增
       const id = Date.now().toString();
-      appointments.push({ id, name, date, time, service, note, createdAt: Date.now() });
+      appointments.push({ id, name, date, time, service, note, duration, createdAt: Date.now() });
     }
 
     saveAppointments(appointments);
@@ -830,6 +1120,7 @@
     editingIdInput.value = '';
     submitText.textContent = '新增預約';
     dateInput.value = getTodayStr();
+    durationInput.value = '';
   }
 
   appointmentsEl.addEventListener('click', (e) => {
@@ -853,6 +1144,7 @@
       timeInput.value = item.time;
       serviceInput.value = item.service;
       noteInput.value = item.note || '';
+      durationInput.value = item.duration || '';
       editingIdInput.value = item.id;
       submitText.textContent = '儲存修改';
 
@@ -891,6 +1183,42 @@
 
   dashboardDateInput.addEventListener('change', () => {
     renderDashboard(dashboardDateInput.value);
+  });
+
+  // 月曆事件
+  document.getElementById('openCalendar').addEventListener('click', () => {
+    calendarOverlay.style.display = 'flex';
+    renderCalendar();
+  });
+
+  calendarPrev.addEventListener('click', () => {
+    if (calendarMonth === 0) {
+      calendarMonth = 11;
+      calendarYear -= 1;
+    } else {
+      calendarMonth -= 1;
+    }
+    renderCalendar();
+  });
+
+  calendarNext.addEventListener('click', () => {
+    if (calendarMonth === 11) {
+      calendarMonth = 0;
+      calendarYear += 1;
+    } else {
+      calendarMonth += 1;
+    }
+    renderCalendar();
+  });
+
+  calendarClose.addEventListener('click', () => {
+    calendarOverlay.style.display = 'none';
+  });
+
+  calendarOverlay.addEventListener('click', (e) => {
+    if (e.target === calendarOverlay) {
+      calendarOverlay.style.display = 'none';
+    }
   });
 
   render();
