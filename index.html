@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>預約紀錄（美髮）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <style>
+    :root {
+      --primary: #ff6f61;
+      --primary-dark: #e85a4f;
+      --bg: #f9fafb;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+      --text-main: #111827;
+      --text-sub: #6b7280;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 12px 20px;
+    }
+
+    header {
+      padding: 8px 2px 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+    }
+
+    .form {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      font: inherit;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      outline: none;
+      background: #f9fafb;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 1px rgba(255,111,97,0.4);
+    }
+
+    .field-half-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    textarea {
+      min-height: 56px;
+      resize: vertical;
+    }
+
+    .btn-primary {
+      width: 100%;
+      border-radius: 999px;
+      border: none;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(255,111,97,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(255,111,97,0.25);
+    }
+
+    .btn-secondary, .btn-danger {
+      border-radius: 999px;
+      border: none;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: var(--text-main);
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .tabs-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 10px 0 4px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      border-radius: 999px;
+      font-size: 13px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-sub);
+    }
+
+    .tab.active {
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .btn-link-small {
+      border: none;
+      background: transparent;
+      color: #2563eb;
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .btn-link-small:active {
+      background: #e0ecff;
+    }
+
+    .quick-summary {
+      margin-top: 4px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      font-size: 12px;
+      color: #9a3412;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .quick-summary-label {
+      font-weight: 600;
+    }
+
+    .quick-summary-main {
+      font-weight: 500;
+    }
+
+    .quick-summary-next {
+      color: #c2410c;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .list-header-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .list-header span {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .appointments {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      padding-bottom: 6px;
+    }
+
+    .item {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .item-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .item-time {
+      font-size: 13px;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .item-service {
+      font-size: 13px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .item-note {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-sub);
+      white-space: pre-wrap;
+    }
+
+    .item-footer {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      gap: 4px;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .empty {
+      font-size: 13px;
+      color: var(--text-sub);
+      text-align: center;
+      padding: 16px 8px;
+    }
+
+    .badge-today {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      background: #ecfdf5;
+      color: #059669;
+      border-radius: 999px;
+      padding: 3px 7px;
+    }
+
+    .badge-all {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 999px;
+      padding: 3px 7px;
+    }
+
+    .small-input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .small-input-row input[type="search"] {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #f9fafb;
+    }
+
+    /* 日期儀表板（覆蓋層） */
+    .dashboard-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .dashboard-card {
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      background: #ffffff;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 35px rgba(15,23,42,0.25);
+      display: flex;
+      flex-direction: column;
+      padding: 12px 14px 10px;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .dashboard-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .dashboard-close {
+      border: none;
+      background: #f3f4f6;
+      border-radius: 999px;
+      font-size: 11px;
+      padding: 4px 8px;
+      color: var(--text-sub);
+    }
+
+    .dashboard-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .dashboard-date-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .dashboard-date-row input[type="date"] {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 13px;
+      background: #f9fafb;
+    }
+
+    .dashboard-summary {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .dashboard-list {
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 6px 6px 4px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+
+    .dashboard-item {
+      padding: 4px 6px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+    }
+
+    .dashboard-item-main {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dashboard-item-name {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .dashboard-item-time {
+      font-size: 12px;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .dashboard-item-service {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .dashboard-empty {
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: center;
+      padding: 10px 4px;
+    }
+
+    @media (max-width: 360px) {
+      header h1 {
+        font-size: 20px;
+      }
+      .field-half-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>預約紀錄（美髮）</h1>
+    <p>在手機上快速記錄／查看客人預約（資料只存在這支手機）</p>
+  </header>
+
+  <div class="card" style="margin-bottom: 10px;">
+    <form id="appointmentForm" class="form">
+      <div class="field">
+        <label>客人姓名 *</label>
+        <input id="name" type="text" placeholder="例：王小姐" required />
+      </div>
+
+      <div class="field-half-row">
+        <div class="field">
+          <label>日期 *</label>
+          <input id="date" type="date" required />
+        </div>
+        <div class="field">
+          <label>時間 *</label>
+          <input id="time" type="time" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label>服務項目 *</label>
+        <select id="service" required>
+          <option value="">請選擇</option>
+          <option>剪髮</option>
+          <option>洗剪</option>
+          <option>染髮</option>
+          <option>燙髮</option>
+          <option>護髮</option>
+          <option>頭皮護理</option>
+          <option>其他</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>備註（選填）</label>
+        <textarea id="note" placeholder="例：第一次來 / 從小剪短 / 顏色要自然一點"></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary">
+        <span id="submitText">新增預約</span>
+      </button>
+      <input type="hidden" id="editingId" />
+    </form>
+  </div>
+
+  <div class="card" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+    <div class="tabs-row">
+      <div class="tabs">
+        <button class="tab active" data-tab="today">今天</button>
+        <button class="tab" data-tab="all">全部</button>
+      </div>
+      <button id="openDashboard" class="btn-link-small">日期儀表板</button>
+    </div>
+
+    <div id="quickSummary" class="quick-summary">
+      <span class="quick-summary-label">今天預約：</span>
+      <span id="quickSummaryText" class="quick-summary-main">尚無資料</span>
+    </div>
+
+    <div class="list-header">
+      <div class="list-header-title">預約列表</div>
+      <span id="countLabel">共 0 筆</span>
+    </div>
+
+    <div class="small-input-row">
+      <span>搜尋姓名：</span>
+      <input type="search" id="searchInput" placeholder="輸入部分姓名即可" />
+    </div>
+
+    <div id="appointments" class="appointments"></div>
+  </div>
+  </div>
+</div>
+
+<!-- 日期儀表板覆蓋層 -->
+<div id="dashboardOverlay" class="dashboard-overlay">
+  <div class="dashboard-card">
+    <div class="dashboard-header">
+      <div class="dashboard-title">日期儀表板</div>
+      <button id="closeDashboard" class="dashboard-close">關閉</button>
+    </div>
+    <div class="dashboard-body">
+      <div class="dashboard-date-row">
+        <span>選擇日期：</span>
+        <input id="dashboardDate" type="date" />
+      </div>
+      <div id="dashboardSummary" class="dashboard-summary">尚未選擇日期</div>
+      <div id="dashboardList" class="dashboard-list">
+        <div class="dashboard-empty">請先選擇日期</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'hair_appointments_v1';
+
+  function loadAppointments() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }
+
+  function saveAppointments(list) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+
+  function getTodayStr() {
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  const form = document.getElementById('appointmentForm');
+  const nameInput = document.getElementById('name');
+  const dateInput = document.getElementById('date');
+  const timeInput = document.getElementById('time');
+  const serviceInput = document.getElementById('service');
+  const noteInput = document.getElementById('note');
+  const editingIdInput = document.getElementById('editingId');
+  const submitText = document.getElementById('submitText');
+
+  const appointmentsEl = document.getElementById('appointments');
+  const countLabel = document.getElementById('countLabel');
+  const tabs = document.querySelectorAll('.tab');
+  const searchInput = document.getElementById('searchInput');
+  const quickSummaryText = document.getElementById('quickSummaryText');
+  const openDashboardBtn = document.getElementById('openDashboard');
+  const dashboardOverlay = document.getElementById('dashboardOverlay');
+  const closeDashboardBtn = document.getElementById('closeDashboard');
+  const dashboardDateInput = document.getElementById('dashboardDate');
+  const dashboardSummary = document.getElementById('dashboardSummary');
+  const dashboardList = document.getElementById('dashboardList');
+
+  let currentTab = 'today';
+  let appointments = loadAppointments();
+
+  // 預設日期為今天
+  dateInput.value = getTodayStr();
+  dashboardDateInput.value = getTodayStr();
+
+  function updateQuickSummary() {
+    const today = getTodayStr();
+    const todays = appointments
+      .filter(a => a.date === today)
+      .sort((a, b) => {
+        if (a.time && b.time) {
+          return a.time.localeCompare(b.time);
+        }
+        return 0;
+      });
+
+    if (todays.length === 0) {
+      quickSummaryText.textContent = '今天目前沒有預約';
+      return;
+    }
+
+    // 找出「下一位」客人（時間 >= 現在），若沒有就顯示今天第一筆
+    const now = new Date();
+    let next = null;
+    for (const a of todays) {
+      if (!a.time) continue;
+      const [h, m] = a.time.split(':').map(Number);
+      const t = new Date();
+      t.setHours(h, m || 0, 0, 0);
+      if (t >= now) {
+        next = a;
+        break;
+      }
+    }
+    if (!next) {
+      next = todays[0];
+    }
+
+    quickSummaryText.textContent =
+      `共 ${todays.length} 筆 · 下一位 ${next.time || ''} ${next.name}（${next.service}）`;
+  }
+
+  function render() {
+    const today = getTodayStr();
+    let filtered = [...appointments];
+
+    if (currentTab === 'today') {
+      filtered = filtered.filter(a => a.date === today);
+    }
+
+    const keyword = searchInput.value.trim().toLowerCase();
+    if (keyword) {
+      filtered = filtered.filter(a => a.name.toLowerCase().includes(keyword));
+    }
+
+    // 依日期＋時間排序
+    filtered.sort((a, b) => {
+      if (a.date === b.date) {
+        return (a.time || '').localeCompare(b.time || '');
+      }
+      return a.date.localeCompare(b.date);
+    });
+
+    countLabel.textContent = `共 ${filtered.length} 筆`;
+
+    // 更新上方快速摘要（永遠看「今天」）
+    updateQuickSummary();
+
+    appointmentsEl.innerHTML = '';
+
+    if (filtered.length === 0) {
+      appointmentsEl.innerHTML = '<div class="empty">目前沒有符合條件的預約</div>';
+      return;
+    }
+
+    filtered.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const dateLabel = item.date;
+      const isToday = item.date === today;
+
+      div.innerHTML = `
+        <div class="item-header">
+          <div>
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-service">${escapeHtml(item.service)}</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="item-time">${item.time ? item.time : ''}</div>
+          </div>
+        </div>
+        <div class="item-footer">
+          <div>
+            ${
+              isToday
+                ? `<span class="badge-today">今天 · ${dateLabel}</span>`
+                : `<span class="badge-all">${dateLabel}</span>`
+            }
+          </div>
+          <div class="item-actions">
+            <button class="btn-secondary" data-action="edit" data-id="${item.id}">編輯</button>
+            <button class="btn-danger" data-action="delete" data-id="${item.id}">刪除</button>
+          </div>
+        </div>
+        ${
+          item.note
+            ? `<div class="item-note">${escapeHtml(item.note)}</div>`
+            : ''
+        }
+      `;
+
+      appointmentsEl.appendChild(div);
+    });
+  }
+
+  function renderDashboard(dateStr) {
+    if (!dateStr) {
+      dashboardSummary.textContent = '尚未選擇日期';
+      dashboardList.innerHTML = '<div class="dashboard-empty">請先選擇日期</div>';
+      return;
+    }
+
+    const list = appointments
+      .filter(a => a.date === dateStr)
+      .sort((a, b) => {
+        if (a.time && b.time) return a.time.localeCompare(b.time);
+        return 0;
+      });
+
+    if (list.length === 0) {
+      dashboardSummary.textContent = `${dateStr} · 目前沒有預約`;
+      dashboardList.innerHTML = '<div class="dashboard-empty">這一天目前沒有預約</div>';
+      return;
+    }
+
+    dashboardSummary.textContent = `${dateStr} · 共 ${list.length} 筆預約`;
+
+    dashboardList.innerHTML = '';
+    list.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'dashboard-item';
+      div.innerHTML = `
+        <div class="dashboard-item-main">
+          <div class="dashboard-item-name">${escapeHtml(item.name)}</div>
+          <div class="dashboard-item-time">${item.time || ''}</div>
+        </div>
+        <div class="dashboard-item-service">${escapeHtml(item.service)}</div>
+      `;
+      dashboardList.appendChild(div);
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const name = nameInput.value.trim();
+    const date = dateInput.value;
+    const time = timeInput.value;
+    const service = serviceInput.value;
+    const note = noteInput.value.trim();
+    const editingId = editingIdInput.value;
+
+    if (!name || !date || !time || !service) {
+      alert('請填寫「姓名、日期、時間、服務項目」。');
+      return;
+    }
+
+    if (editingId) {
+      // 編輯
+      appointments = appointments.map(a => {
+        if (a.id === editingId) {
+          return { ...a, name, date, time, service, note };
+        }
+        return a;
+      });
+    } else {
+      // 新增
+      const id = Date.now().toString();
+      appointments.push({ id, name, date, time, service, note, createdAt: Date.now() });
+    }
+
+    saveAppointments(appointments);
+    resetForm();
+    render();
+  });
+
+  function resetForm() {
+    form.reset();
+    editingIdInput.value = '';
+    submitText.textContent = '新增預約';
+    dateInput.value = getTodayStr();
+  }
+
+  appointmentsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+
+    if (action === 'delete') {
+      if (!confirm('確定要刪除這筆預約嗎？')) return;
+      appointments = appointments.filter(a => a.id !== id);
+      saveAppointments(appointments);
+      render();
+    } else if (action === 'edit') {
+      const item = appointments.find(a => a.id === id);
+      if (!item) return;
+
+      nameInput.value = item.name;
+      dateInput.value = item.date;
+      timeInput.value = item.time;
+      serviceInput.value = item.service;
+      noteInput.value = item.note || '';
+      editingIdInput.value = item.id;
+      submitText.textContent = '儲存修改';
+
+      // 捲到上方表單
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentTab = tab.dataset.tab;
+      render();
+    });
+  });
+
+  searchInput.addEventListener('input', () => {
+    render();
+  });
+
+  openDashboardBtn.addEventListener('click', () => {
+    dashboardOverlay.style.display = 'flex';
+    renderDashboard(dashboardDateInput.value || getTodayStr());
+  });
+
+  closeDashboardBtn.addEventListener('click', () => {
+    dashboardOverlay.style.display = 'none';
+  });
+
+  dashboardOverlay.addEventListener('click', (e) => {
+    if (e.target === dashboardOverlay) {
+      dashboardOverlay.style.display = 'none';
+    }
+  });
+
+  dashboardDateInput.addEventListener('change', () => {
+    renderDashboard(dashboardDateInput.value);
+  });
+
+  render();
+</script>
+</body>
+</html>
