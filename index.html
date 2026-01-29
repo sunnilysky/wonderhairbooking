@@ -574,6 +574,29 @@
       color: var(--primary-dark);
     }
 
+    /* 已預約時段：畫斜線、不可選 */
+    .quick-time-btn.taken {
+      position: relative;
+      pointer-events: none;
+      cursor: not-allowed;
+      opacity: 0.55;
+      color: var(--text-sub);
+      border-color: #d6d3d1;
+      background: #fafaf9;
+    }
+    .quick-time-btn.taken::after {
+      content: '';
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      top: 50%;
+      height: 1.5px;
+      background: var(--text-sub);
+      transform: rotate(-35deg);
+      transform-origin: center;
+    }
+
+
     /* 日期詳情視圖：左列表 + 右表單 */
     .day-view-header {
       display: flex;
@@ -768,8 +791,17 @@
               </select>
             </div>
             <div class="field">
-              <label for="duration">預估時間（分鐘，選填）</label>
-              <input id="duration" type="number" min="0" step="5" placeholder="例：90" />
+              <label for="duration">預估時間（選填）</label>
+              <select id="duration">
+                <option value="">請選擇</option>
+                <option value="30">30分鐘</option>
+                <option value="60">1小時</option>
+                <option value="90">1時30分</option>
+                <option value="120">2小時</option>
+                <option value="150">2時30分</option>
+                <option value="180">3時</option>
+                <option value="240">4時</option>
+              </select>
             </div>
           </div>
           <div class="field">
@@ -883,6 +915,7 @@
       dayViewTitle.textContent = formatDateFriendly(selectedDate) + ' 當日預約';
       dateInput.value = selectedDate;
       renderDayView();
+      updateQuickTimeAvailability();
     }
   }
 
@@ -927,6 +960,7 @@
       `;
       dayViewList.appendChild(div);
     });
+    updateQuickTimeAvailability();
   }
 
   function renderCalendar() {
@@ -1037,7 +1071,7 @@
     var date = dateInput.value;
     var time = timeInput.value;
     var service = serviceInput.value;
-    var duration = durationInput.value.trim();
+    var duration = durationInput ? durationInput.value.trim() : '';
     var note = noteInput.value.trim();
     var phone = (phoneInput && phoneInput.value) ? phoneInput.value.trim() : '';
     var editingId = editingIdInput.value;
@@ -1108,13 +1142,62 @@
       durationInput.value = item.duration || '';
       editingIdInput.value = item.id;
       if (phoneInput) phoneInput.value = item.phone || '';
+      durationInput.value = item.duration || '';
       submitText.textContent = '儲存修改';
     }
   });
 
+  function normalizeTimeStr(str) {
+    if (!str || typeof str !== 'string') return '';
+    var parts = str.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!parts) return str.trim();
+    var h = parseInt(parts[1], 10);
+    var m = parts[2];
+    return (h < 10 ? '0' : '') + h + ':' + m;
+  }
+
+  function timeToMinutes(str) {
+    if (!str || typeof str !== 'string') return -1;
+    var parts = str.trim().match(/^(\d{1,2}):(\d{2})$/);
+    if (!parts) return -1;
+    return parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+  }
+
+  function updateQuickTimeAvailability() {
+    var timeRow = document.getElementById('quickTimeRow');
+    if (!timeRow) return;
+    var editingId = editingIdInput ? editingIdInput.value : '';
+    var intervals = [];
+    appointments
+      .filter(function(a) { return a.date === selectedDate && a.id !== editingId && a.time; })
+      .forEach(function(a) {
+        var startM = timeToMinutes(a.time);
+        if (startM < 0) return;
+        var dur = parseInt(a.duration, 10) || 60;
+        if (dur <= 0) dur = 60;
+        intervals.push({ start: startM, end: startM + dur });
+      });
+    function isSlotTaken(slotMinutes) {
+      for (var i = 0; i < intervals.length; i++) {
+        var r = intervals[i];
+        if (slotMinutes >= r.start && slotMinutes < r.end) return true;
+      }
+      return false;
+    }
+    timeRow.querySelectorAll('.quick-time-btn').forEach(function(btn) {
+      var t = btn.dataset.time;
+      var slotM = t ? timeToMinutes(t) : -1;
+      var taken = slotM >= 0 && isSlotTaken(slotM);
+      btn.classList.toggle('taken', !!taken);
+      btn.setAttribute('aria-disabled', taken ? 'true' : 'false');
+      btn.title = taken ? '此時段在預約操作時間內，無法選擇' : '';
+    });
+  }
+
   document.getElementById('quickTimeRow').addEventListener('click', function(e) {
     var btn = e.target.closest('.quick-time-btn');
     if (!btn) return;
+    if (btn.classList.contains('taken')) return;
     var t = btn.dataset.time;
     if (t) timeInput.value = t;
   });
