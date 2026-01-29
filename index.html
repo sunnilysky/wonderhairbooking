@@ -4,16 +4,30 @@
   <meta charset="UTF-8" />
   <title>Wonder Hair</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#c45c4a" />
+  <meta name="description" content="Wonder Hair 預約管理：月曆檢視、當日預約列表與新增預約。" />
   <style>
     :root {
-      --primary: #ff6f61;
-      --primary-dark: #e85a4f;
-      --bg: #f9fafb;
+      --primary: #c45c4a;
+      --primary-dark: #a84a3a;
+      --primary-light: #fdf0ee;
+      --accent: #2d5a4a;
+      --accent-light: #e8f2ef;
+      --bg: #f5f5f4;
       --card-bg: #ffffff;
-      --border: #e5e7eb;
-      --text-main: #111827;
-      --text-sub: #6b7280;
-      --danger: #ef4444;
+      --border: #e7e5e4;
+      --text-main: #1c1917;
+      --text-sub: #78716c;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --touch: 44px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+      --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
     }
 
     * {
@@ -21,11 +35,17 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
       background: var(--bg);
       color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     .app {
@@ -34,30 +54,33 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 12px 12px 20px;
+      padding: 16px 16px 24px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
     }
 
     header {
-      padding: 8px 2px 12px;
+      padding: 8px 0 16px;
     }
 
     header h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
+      letter-spacing: -0.02em;
     }
 
     header p {
-      margin: 4px 0 0;
-      font-size: 13px;
+      margin: 6px 0 0;
+      font-size: 14px;
       color: var(--text-sub);
     }
 
     .card {
       background: var(--card-bg);
-      border-radius: 14px;
-      padding: 12px 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-lg);
       border: 1px solid var(--border);
     }
 
@@ -94,8 +117,14 @@
     .field select:focus,
     .field textarea:focus {
       border-color: var(--primary);
-      background: #ffffff;
-      box-shadow: 0 0 0 1px rgba(255,111,97,0.4);
+      background: #fff;
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .field input:focus-visible,
+    .field select:focus-visible,
+    .field textarea:focus-visible {
+      outline: none;
     }
 
     .field-half-row {
@@ -111,43 +140,53 @@
 
     .btn-primary {
       width: 100%;
-      border-radius: 999px;
+      min-height: var(--touch);
+      border-radius: var(--radius);
       border: none;
-      padding: 10px 16px;
+      padding: 12px 20px;
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: white;
-      font-size: 15px;
+      color: #fff;
+      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 8px 16px rgba(255,111,97,0.35);
+      box-shadow: var(--shadow);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
+      transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
     }
 
+    .btn-primary:hover { box-shadow: 0 4px 12px rgba(196,92,74,0.35); }
     .btn-primary:active {
-      transform: translateY(1px);
-      box-shadow: 0 4px 10px rgba(255,111,97,0.25);
+      transform: scale(0.98);
+      box-shadow: 0 2px 6px rgba(196,92,74,0.25);
     }
+    .btn-primary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
     .btn-secondary, .btn-danger {
-      border-radius: 999px;
+      border-radius: var(--radius);
       border: none;
-      padding: 6px 10px;
-      font-size: 12px;
+      min-height: 36px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
+      transition: background 0.15s var(--ease), transform 0.1s var(--ease);
     }
+    .btn-secondary:active, .btn-danger:active { transform: scale(0.97); }
 
     .btn-secondary {
-      background: #f3f4f6;
+      background: var(--border);
       color: var(--text-main);
     }
+    .btn-secondary:hover { background: #d6d3d1; }
 
     .btn-danger {
-      background: #fee2e2;
+      background: var(--danger-bg);
       color: var(--danger);
     }
+    .btn-danger:hover { background: #fee2e2; }
 
     .tabs-row {
       display: flex;
@@ -249,11 +288,13 @@
     }
 
     .item {
-      background: #f9fafb;
-      border-radius: 12px;
-      padding: 8px 10px;
-      border: 1px solid #e5e7eb;
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      transition: box-shadow 0.15s var(--ease);
     }
+    .item:hover { box-shadow: var(--shadow); }
 
     .item-header {
       display: flex;
@@ -348,155 +389,35 @@
       background: #f9fafb;
     }
 
-    /* 日期儀表板（覆蓋層） */
-    .dashboard-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.4);
+    /* 主視圖切換：月曆首頁 / 日期詳情 */
+    .view-calendar,
+    .view-day {
       display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 50;
-    }
-
-    .dashboard-card {
-      width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-      background: #ffffff;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 35px rgba(15,23,42,0.25);
-      display: flex;
       flex-direction: column;
-      padding: 12px 14px 10px;
-    }
-
-    .dashboard-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .dashboard-title {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .dashboard-close {
-      border: none;
-      background: #f3f4f6;
-      border-radius: 999px;
-      font-size: 11px;
-      padding: 4px 8px;
-      color: var(--text-sub);
-    }
-
-    .dashboard-body {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
       flex: 1;
       min-height: 0;
+      animation: viewIn 0.25s var(--ease);
     }
-
-    .dashboard-date-row {
+    @keyframes viewIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .view-calendar.active,
+    .view-day.active {
       display: flex;
-      gap: 8px;
-      align-items: center;
-      font-size: 12px;
-      color: var(--text-sub);
     }
 
-    .dashboard-date-row input[type="date"] {
-      flex: 1;
-      border-radius: 999px;
+    /* 月曆（首頁主內容） */
+    .calendar-main {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
       border: 1px solid var(--border);
-      padding: 4px 10px;
-      font-size: 13px;
-      background: #f9fafb;
-    }
-
-    .dashboard-summary {
-      font-size: 12px;
-      color: var(--text-sub);
-    }
-
-    .dashboard-list {
-      border-radius: 12px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      padding: 6px 6px 4px;
       flex: 1;
-      min-height: 0;
-      overflow-y: auto;
-      font-size: 12px;
-    }
-
-    .dashboard-item {
-      padding: 4px 6px;
-      border-radius: 8px;
-      margin-bottom: 4px;
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-    }
-
-    .dashboard-item-main {
-      display: flex;
-      justify-content: space-between;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .dashboard-item-name {
-      font-weight: 600;
-      font-size: 13px;
-    }
-
-    .dashboard-item-time {
-      font-size: 12px;
-      color: var(--primary-dark);
-      font-weight: 600;
-    }
-
-    .dashboard-item-service {
-      font-size: 11px;
-      color: var(--text-sub);
-      margin-top: 2px;
-    }
-
-    .dashboard-empty {
-      font-size: 12px;
-      color: var(--text-sub);
-      text-align: center;
-      padding: 10px 4px;
-    }
-
-    /* 月曆視圖（覆蓋層） */
-    .calendar-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.4);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 50;
-    }
-
-    .calendar-card {
-      width: 100%;
-      max-width: 480px;
-      max-height: 90vh;
-      background: #ffffff;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 35px rgba(15,23,42,0.25);
       display: flex;
       flex-direction: column;
-      padding: 10px 12px 10px;
+      min-height: 0;
     }
 
     .calendar-header {
@@ -518,22 +439,17 @@
 
     .calendar-nav button {
       border: none;
-      background: #f3f4f6;
-      border-radius: 999px;
-      padding: 3px 8px;
-      font-size: 11px;
-      color: var(--text-sub);
+      background: var(--border);
+      border-radius: var(--radius);
+      min-height: 36px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s var(--ease);
     }
-
-    .calendar-close {
-      border: none;
-      background: #f3f4f6;
-      border-radius: 999px;
-      font-size: 11px;
-      padding: 3px 8px;
-      color: var(--text-sub);
-      margin-left: 6px;
-    }
+    .calendar-nav button:hover { background: #d6d3d1; }
+    .calendar-nav button:active { transform: scale(0.98); }
 
     .calendar-weekdays {
       display: grid;
@@ -554,9 +470,9 @@
 
     .calendar-day {
       border-radius: 10px;
-      padding: 4px 2px;
+      padding: 6px 2px;
       text-align: center;
-      min-height: 32px;
+      min-height: 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -564,6 +480,7 @@
       cursor: pointer;
       border: 1px solid transparent;
       color: var(--text-sub);
+      transition: background 0.15s var(--ease), border-color 0.15s var(--ease);
     }
 
     .calendar-day-other {
@@ -571,33 +488,186 @@
     }
 
     .calendar-day-today {
-      border-color: #fecaca;
-      background: #fef2f2;
+      border-color: var(--primary);
+      background: var(--primary-light);
       color: var(--primary-dark);
       font-weight: 600;
     }
 
     .calendar-day-has {
-      position: relative;
-      color: #111827;
-      font-weight: 500;
+      background: var(--accent-light);
+      border-color: #86efac;
+      color: var(--accent);
+      font-weight: 600;
     }
 
-    .calendar-day-has::after {
-      content: '';
-      width: 5px;
-      height: 5px;
-      border-radius: 999px;
-      background: #22c55e;
-      position: absolute;
-      bottom: 3px;
-      right: 8px;
+    .calendar-day:active {
+      transform: scale(0.95);
+      transition: transform 0.1s var(--ease);
     }
+
+    .calendar-today-summary {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: var(--primary-light);
+      border-radius: var(--radius);
+      border: 1px solid #f5d5d0;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+    .calendar-today-summary strong { color: var(--primary-dark); }
 
     .calendar-footer {
-      margin-top: 8px;
-      font-size: 11px;
+      margin-top: 12px;
+      font-size: 12px;
       color: var(--text-sub);
+    }
+
+    /* Toast 提示 */
+    .toast-wrap {
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      z-index: 100;
+      opacity: 0;
+      transition: transform 0.3s var(--ease), opacity 0.3s var(--ease);
+      pointer-events: none;
+    }
+    .toast-wrap.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast {
+      padding: 12px 20px;
+      background: var(--text-main);
+      color: #fff;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      white-space: nowrap;
+    }
+    .toast.success { background: var(--success); }
+    .toast.danger { background: var(--danger); }
+
+    /* 快速時間鈕 */
+    .quick-time-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .quick-time-btn {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      color: var(--text-sub);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .quick-time-btn:hover, .quick-time-btn:focus {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    /* 日期詳情視圖：左列表 + 右表單 */
+    .day-view-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .day-view-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .btn-back-calendar {
+      border: none;
+      background: var(--border);
+      border-radius: var(--radius);
+      min-height: 40px;
+      padding: 8px 16px;
+      font-size: 14px;
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s var(--ease), transform 0.1s var(--ease);
+    }
+    .btn-back-calendar:hover { background: #d6d3d1; }
+    .btn-back-calendar:active { transform: scale(0.98); }
+
+    .day-view-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    @media (max-width: 600px) {
+      .day-view-panels {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .day-view-left {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    .day-view-right {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    .day-view-left-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .day-view-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-sub);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .empty-state-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.5;
     }
 
     @media (max-width: 360px) {
@@ -614,136 +684,111 @@
 <div class="app">
   <header>
     <h1>Wonder Hair 預約紀錄</h1>
-    <p>在手機上快速記錄／查看客人預約（資料只存在這支手機）</p>
+    <p>點選月曆上的日期可查看當日預約並新增預約（資料只存在這支手機）</p>
   </header>
 
-  <div class="card" style="margin-bottom: 10px;">
-    <form id="appointmentForm" class="form">
-      <div class="field">
-        <label>客人姓名 *</label>
-        <input id="name" type="text" placeholder="例：王小姐" required />
-      </div>
-
-      <div class="field-half-row">
-        <div class="field">
-          <label>日期 *</label>
-          <input id="date" type="date" required />
-        </div>
-        <div class="field">
-          <label>時間 *</label>
-          <input id="time" type="time" required />
+  <!-- 視圖一：月曆首頁（有預約的日期綠色背景凸顯） -->
+  <div id="viewCalendar" class="view-calendar active">
+    <div class="calendar-main">
+      <div class="calendar-header">
+        <div class="calendar-title" id="calendarTitle">月曆</div>
+        <div class="calendar-nav">
+          <button id="calendarPrev" type="button" aria-label="上個月">&lt; 上月</button>
+          <button id="calendarNext" type="button" aria-label="下個月">下月 &gt;</button>
         </div>
       </div>
-
-      <div class="field-half-row">
-        <div class="field">
-          <label>服務項目 *</label>
-          <select id="service" required>
-            <option value="">請選擇</option>
-            <option>剪髮</option>
-            <option>洗剪</option>
-            <option>染髮</option>
-            <option>燙髮</option>
-            <option>護髮</option>
-            <option>頭皮護理</option>
-            <option>其他</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>預估時間（分鐘，選填）</label>
-          <input id="duration" type="number" min="0" step="5" placeholder="例：90" />
-        </div>
+      <div class="calendar-weekdays">
+        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
       </div>
-
-      <div class="field">
-        <label>備註（選填）</label>
-        <textarea id="note" placeholder="例：第一次來 / 從小剪短 / 顏色要自然一點"></textarea>
+      <div id="calendarGrid" class="calendar-grid"></div>
+      <div id="calendarTodaySummary" class="calendar-today-summary" aria-live="polite"></div>
+      <div class="calendar-footer" id="calendarFooter">
+        有預約的日期以綠色背景顯示，點選日期可查看當日預約並新增。
       </div>
-
-      <button type="submit" class="btn-primary">
-        <span id="submitText">新增預約</span>
-      </button>
-      <input type="hidden" id="editingId" />
-    </form>
+    </div>
   </div>
 
-  <div class="card" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
-    <div class="tabs-row">
-      <div class="tabs">
-        <button class="tab active" data-tab="today">今天</button>
-        <button class="tab" data-tab="all">全部</button>
+  <!-- 視圖二：日期詳情（左：當日預約列表，右：新增預約表單） -->
+  <div id="viewDay" class="view-day">
+    <div class="day-view-header">
+      <div class="day-view-title" id="dayViewTitle">當日預約</div>
+      <button id="backToCalendar" type="button" class="btn-back-calendar" aria-label="回到月曆">← 回到月曆</button>
+    </div>
+    <div class="day-view-panels">
+      <div class="day-view-left">
+        <div class="day-view-left-title" id="dayViewListTitle">當日預約列表</div>
+        <div id="dayViewList" class="day-view-list" role="list"></div>
       </div>
-      <div style="display: flex; gap: 4px;">
-        <button id="openCalendar" class="btn-link-small">月曆</button>
-        <button id="openDashboard" class="btn-link-small">日期儀表板</button>
+      <div class="day-view-right">
+        <div class="day-view-left-title">新增預約</div>
+        <form id="appointmentForm" class="form">
+          <div class="field">
+            <label for="name">客人姓名 *</label>
+            <input id="name" type="text" placeholder="例：王小姐" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label>快速選時間</label>
+            <div class="quick-time-row" id="quickTimeRow">
+              <button type="button" class="quick-time-btn" data-time="09:00">09:00</button>
+              <button type="button" class="quick-time-btn" data-time="10:00">10:00</button>
+              <button type="button" class="quick-time-btn" data-time="11:00">11:00</button>
+              <button type="button" class="quick-time-btn" data-time="14:00">14:00</button>
+              <button type="button" class="quick-time-btn" data-time="15:00">15:00</button>
+              <button type="button" class="quick-time-btn" data-time="16:00">16:00</button>
+              <button type="button" class="quick-time-btn" data-time="17:00">17:00</button>
+              <button type="button" class="quick-time-btn" data-time="18:00">18:00</button>
+            </div>
+          </div>
+          <div class="field-half-row">
+            <div class="field">
+              <label for="date">日期 *</label>
+              <input id="date" type="date" required />
+            </div>
+            <div class="field">
+              <label for="time">時間 *</label>
+              <input id="time" type="time" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="phone">聯絡電話（選填）</label>
+            <input id="phone" type="tel" placeholder="例：0912-345678" autocomplete="tel" />
+          </div>
+          <div class="field-half-row">
+            <div class="field">
+              <label for="service">服務項目 *</label>
+              <select id="service" required>
+                <option value="">請選擇</option>
+                <option>剪髮</option>
+                <option>洗剪</option>
+                <option>染髮</option>
+                <option>燙髮</option>
+                <option>護髮</option>
+                <option>頭皮護理</option>
+                <option>其他</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="duration">預估時間（分鐘，選填）</label>
+              <input id="duration" type="number" min="0" step="5" placeholder="例：90" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="note">備註（選填）</label>
+            <textarea id="note" placeholder="例：第一次來 / 從小剪短 / 顏色要自然一點"></textarea>
+          </div>
+          <button type="submit" class="btn-primary">
+            <span id="submitText">新增預約</span>
+          </button>
+          <input type="hidden" id="editingId" />
+        </form>
       </div>
-    </div>
-
-    <div id="quickSummary" class="quick-summary">
-      <span class="quick-summary-label">今天預約：</span>
-      <span id="quickSummaryText" class="quick-summary-main">尚無資料</span>
-    </div>
-
-    <div class="list-header">
-      <div class="list-header-title">預約列表</div>
-      <span id="countLabel">共 0 筆</span>
-    </div>
-
-    <div class="small-input-row">
-      <span>搜尋姓名：</span>
-      <input type="search" id="searchInput" placeholder="輸入部分姓名即可" />
-    </div>
-
-    <div id="appointments" class="appointments"></div>
-  </div>
-  </div>
-</div>
-
-<!-- 月曆覆蓋層 -->
-<div id="calendarOverlay" class="calendar-overlay">
-  <div class="calendar-card">
-    <div class="calendar-header">
-      <div class="calendar-title" id="calendarTitle">月曆</div>
-      <div class="calendar-nav">
-        <button id="calendarPrev">&lt; 上個月</button>
-        <button id="calendarNext">下個月 &gt;</button>
-        <button id="calendarClose" class="calendar-close">關閉</button>
-      </div>
-    </div>
-    <div class="calendar-weekdays">
-      <div>日</div>
-      <div>一</div>
-      <div>二</div>
-      <div>三</div>
-      <div>四</div>
-      <div>五</div>
-      <div>六</div>
-    </div>
-    <div id="calendarGrid" class="calendar-grid"></div>
-    <div class="calendar-footer" id="calendarFooter">
-      點擊日期可查看當日預約，並自動帶入表單日期。
     </div>
   </div>
 </div>
 
-<!-- 日期儀表板覆蓋層 -->
-<div id="dashboardOverlay" class="dashboard-overlay">
-  <div class="dashboard-card">
-    <div class="dashboard-header">
-      <div class="dashboard-title">日期儀表板</div>
-      <button id="closeDashboard" class="dashboard-close">關閉</button>
-    </div>
-    <div class="dashboard-body">
-      <div class="dashboard-date-row">
-        <span>選擇日期：</span>
-        <input id="dashboardDate" type="date" />
-      </div>
-      <div id="dashboardSummary" class="dashboard-summary">尚未選擇日期</div>
-      <div id="dashboardList" class="dashboard-list">
-        <div class="dashboard-empty">請先選擇日期</div>
-      </div>
-    </div>
-  </div>
+<!-- Toast 提示 -->
+<div id="toastWrap" class="toast-wrap" role="status" aria-live="polite">
+  <div id="toast" class="toast"></div>
 </div>
 
 <script>
@@ -764,10 +809,17 @@
   }
 
   function getTodayStr() {
-    const d = new Date();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${m}-${day}`;
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  function formatDateFriendly(ymd) {
+    if (!ymd) return '';
+    var parts = ymd.split('-');
+    if (parts.length !== 3) return ymd;
+    return parts[0] + '年' + parseInt(parts[1], 10) + '月' + parseInt(parts[2], 10) + '日';
   }
 
   const form = document.getElementById('appointmentForm');
@@ -780,120 +832,82 @@
   const editingIdInput = document.getElementById('editingId');
   const submitText = document.getElementById('submitText');
 
-  const appointmentsEl = document.getElementById('appointments');
-  const countLabel = document.getElementById('countLabel');
-  const tabs = document.querySelectorAll('.tab');
-  const searchInput = document.getElementById('searchInput');
-  const quickSummaryText = document.getElementById('quickSummaryText');
-  const openDashboardBtn = document.getElementById('openDashboard');
-  const dashboardOverlay = document.getElementById('dashboardOverlay');
-  const closeDashboardBtn = document.getElementById('closeDashboard');
-  const dashboardDateInput = document.getElementById('dashboardDate');
-  const dashboardSummary = document.getElementById('dashboardSummary');
-  const dashboardList = document.getElementById('dashboardList');
+  const viewCalendar = document.getElementById('viewCalendar');
+  const viewDay = document.getElementById('viewDay');
+  const dayViewTitle = document.getElementById('dayViewTitle');
+  const dayViewList = document.getElementById('dayViewList');
+  const backToCalendarBtn = document.getElementById('backToCalendar');
 
-  const calendarOverlay = document.getElementById('calendarOverlay');
   const calendarTitle = document.getElementById('calendarTitle');
   const calendarGrid = document.getElementById('calendarGrid');
+  const calendarTodaySummary = document.getElementById('calendarTodaySummary');
   const calendarPrev = document.getElementById('calendarPrev');
   const calendarNext = document.getElementById('calendarNext');
-  const calendarClose = document.getElementById('calendarClose');
+  const dayViewListTitle = document.getElementById('dayViewListTitle');
+  const toastWrap = document.getElementById('toastWrap');
+  const toastEl = document.getElementById('toast');
+  const phoneInput = document.getElementById('phone');
 
-  let currentTab = 'today';
   let appointments = loadAppointments();
   let calendarYear;
-  let calendarMonth; // 0-11
+  let calendarMonth;
+  let selectedDate = getTodayStr();
+  let toastTimer = null;
 
-  // 預設日期為今天
   dateInput.value = getTodayStr();
-  dashboardDateInput.value = getTodayStr();
   (function initCalendarYM() {
     const d = new Date();
     calendarYear = d.getFullYear();
     calendarMonth = d.getMonth();
   })();
 
-  function updateQuickSummary() {
-    const today = getTodayStr();
-    const todays = appointments
-      .filter(a => a.date === today)
-      .sort((a, b) => {
-        if (a.time && b.time) {
-          return a.time.localeCompare(b.time);
-        }
-        return 0;
-      });
-
-    if (todays.length === 0) {
-      quickSummaryText.textContent = '今天目前沒有預約';
-      return;
-    }
-
-    // 找出「下一位」客人（時間 >= 現在），若沒有就顯示今天第一筆
-    const now = new Date();
-    let next = null;
-    for (const a of todays) {
-      if (!a.time) continue;
-      const [h, m] = a.time.split(':').map(Number);
-      const t = new Date();
-      t.setHours(h, m || 0, 0, 0);
-      if (t >= now) {
-        next = a;
-        break;
-      }
-    }
-    if (!next) {
-      next = todays[0];
-    }
-
-    quickSummaryText.textContent =
-      `共 ${todays.length} 筆 · 下一位 ${next.time || ''} ${next.name}（${next.service}）`;
+  function showToast(message, type) {
+    if (toastTimer) clearTimeout(toastTimer);
+    toastEl.textContent = message;
+    toastEl.className = 'toast' + (type ? ' ' + type : '');
+    toastWrap.classList.add('show');
+    toastWrap.setAttribute('aria-label', message);
+    toastTimer = setTimeout(function() {
+      toastWrap.classList.remove('show');
+    }, 2500);
   }
 
-  function render() {
-    const today = getTodayStr();
-    let filtered = [...appointments];
-
-    if (currentTab === 'today') {
-      filtered = filtered.filter(a => a.date === today);
+  function showView(view) {
+    if (view === 'calendar') {
+      viewCalendar.classList.add('active');
+      viewDay.classList.remove('active');
+      renderCalendar();
+    } else {
+      viewCalendar.classList.remove('active');
+      viewDay.classList.add('active');
+      dayViewTitle.textContent = formatDateFriendly(selectedDate) + ' 當日預約';
+      dateInput.value = selectedDate;
+      renderDayView();
     }
+  }
 
-    const keyword = searchInput.value.trim().toLowerCase();
-    if (keyword) {
-      filtered = filtered.filter(a => a.name.toLowerCase().includes(keyword));
-    }
+  function renderDayView() {
+    const list = appointments
+      .filter(a => a.date === selectedDate)
+      .sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
-    // 依日期＋時間排序
-    filtered.sort((a, b) => {
-      if (a.date === b.date) {
-        return (a.time || '').localeCompare(b.time || '');
-      }
-      return a.date.localeCompare(b.date);
-    });
+    dayViewList.innerHTML = '';
+    dayViewListTitle.textContent = list.length ? `當日預約列表（${list.length} 筆）` : '當日預約列表';
 
-    countLabel.textContent = `共 ${filtered.length} 筆`;
-
-    // 更新上方快速摘要（永遠看「今天」）
-    updateQuickSummary();
-
-    appointmentsEl.innerHTML = '';
-
-    if (filtered.length === 0) {
-      appointmentsEl.innerHTML = '<div class="empty">目前沒有符合條件的預約</div>';
+    if (list.length === 0) {
+      dayViewList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div>這一天目前沒有預約<br>在右側表單新增一筆吧</div>';
       return;
     }
 
-    filtered.forEach(item => {
+    list.forEach(item => {
       const div = document.createElement('div');
       div.className = 'item';
-
-      const dateLabel = item.date;
-      const isToday = item.date === today;
-
+      div.setAttribute('role', 'listitem');
       div.innerHTML = `
         <div class="item-header">
           <div>
             <div class="item-name">${escapeHtml(item.name)}</div>
+            ${item.phone ? `<div class="item-service" style="font-size:12px;">${escapeHtml(item.phone)}</div>` : ''}
             <div class="item-service">
               ${escapeHtml(item.service)}
               ${item.duration ? ` · 預估 ${escapeHtml(item.duration)} 分鐘` : ''}
@@ -904,26 +918,14 @@
           </div>
         </div>
         <div class="item-footer">
-          <div>
-            ${
-              isToday
-                ? `<span class="badge-today">今天 · ${dateLabel}</span>`
-                : `<span class="badge-all">${dateLabel}</span>`
-            }
-          </div>
           <div class="item-actions">
-            <button class="btn-secondary" data-action="edit" data-id="${item.id}">編輯</button>
-            <button class="btn-danger" data-action="delete" data-id="${item.id}">刪除</button>
+            <button type="button" class="btn-secondary" data-action="edit" data-id="${item.id}">編輯</button>
+            <button type="button" class="btn-danger" data-action="delete" data-id="${item.id}">刪除</button>
           </div>
         </div>
-        ${
-          item.note
-            ? `<div class="item-note">${escapeHtml(item.note)}</div>`
-            : ''
-        }
+        ${item.note ? `<div class="item-note">${escapeHtml(item.note)}</div>` : ''}
       `;
-
-      appointmentsEl.appendChild(div);
+      dayViewList.appendChild(div);
     });
   }
 
@@ -1003,74 +1005,22 @@
       }
 
       cell.addEventListener('click', () => {
-        // 點日期：1) 更新主畫面列表為該日（暫時視為 "今天"） 2) 表單日期帶入 3) 開啟該日的儀表板
-        dateInput.value = dateStr;
-        dashboardDateInput.value = dateStr;
-
-        // 臨時將「今天」視為選擇日來看列表
-        const originalGetTodayStr = getTodayStr;
-        window._origGetTodayStr = originalGetTodayStr;
-
-        // 用閉包包住選擇日
-        const selected = dateStr;
-        window.getTodayStr = function () {
-          return selected;
-        };
-
-        currentTab = 'today';
-        tabs.forEach(t => {
-          t.classList.toggle('active', t.dataset.tab === 'today');
-        });
-        render();
-
-        // 還原 today 函式
-        window.getTodayStr = originalGetTodayStr;
-
-        calendarOverlay.style.display = 'none';
+        selectedDate = dateStr;
+        showView('day');
       });
 
       calendarGrid.appendChild(cell);
     }
-  }
 
-  function renderDashboard(dateStr) {
-    if (!dateStr) {
-      dashboardSummary.textContent = '尚未選擇日期';
-      dashboardList.innerHTML = '<div class="dashboard-empty">請先選擇日期</div>';
-      return;
+    var todayStr = getTodayStr();
+    var todaysCount = appointments.filter(function(a) { return a.date === todayStr; }).length;
+    if (todaysCount > 0) {
+      calendarTodaySummary.innerHTML = '今日共 <strong>' + todaysCount + '</strong> 筆預約，點選上方日期可查看或新增。';
+      calendarTodaySummary.style.display = 'block';
+    } else {
+      calendarTodaySummary.innerHTML = '今日尚無預約，點選日期可為該日新增預約。';
+      calendarTodaySummary.style.display = 'block';
     }
-
-    const list = appointments
-      .filter(a => a.date === dateStr)
-      .sort((a, b) => {
-        if (a.time && b.time) return a.time.localeCompare(b.time);
-        return 0;
-      });
-
-    if (list.length === 0) {
-      dashboardSummary.textContent = `${dateStr} · 目前沒有預約`;
-      dashboardList.innerHTML = '<div class="dashboard-empty">這一天目前沒有預約</div>';
-      return;
-    }
-
-    dashboardSummary.textContent = `${dateStr} · 共 ${list.length} 筆預約`;
-
-    dashboardList.innerHTML = '';
-    list.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'dashboard-item';
-      div.innerHTML = `
-        <div class="dashboard-item-main">
-          <div class="dashboard-item-name">${escapeHtml(item.name)}</div>
-          <div class="dashboard-item-time">${item.time || ''}</div>
-        </div>
-        <div class="dashboard-item-service">
-          ${escapeHtml(item.service)}
-          ${item.duration ? ` · 預估 ${escapeHtml(item.duration)} 分鐘` : ''}
-        </div>
-      `;
-      dashboardList.appendChild(div);
-    });
   }
 
   function escapeHtml(str) {
@@ -1080,115 +1030,97 @@
       .replace(/>/g, '&gt;');
   }
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const name = nameInput.value.trim();
-    const date = dateInput.value;
-    const time = timeInput.value;
-    const service = serviceInput.value;
-    const duration = durationInput.value.trim();
-    const note = noteInput.value.trim();
-    const editingId = editingIdInput.value;
+    var name = nameInput.value.trim();
+    var date = dateInput.value;
+    var time = timeInput.value;
+    var service = serviceInput.value;
+    var duration = durationInput.value.trim();
+    var note = noteInput.value.trim();
+    var phone = (phoneInput && phoneInput.value) ? phoneInput.value.trim() : '';
+    var editingId = editingIdInput.value;
 
     if (!name || !date || !time || !service) {
-      alert('請填寫「姓名、日期、時間、服務項目」。');
+      showToast('請填寫姓名、日期、時間與服務項目', 'danger');
       return;
     }
 
     if (editingId) {
-      // 編輯
-      appointments = appointments.map(a => {
+      appointments = appointments.map(function(a) {
         if (a.id === editingId) {
-          return { ...a, name, date, time, service, note, duration };
+          return Object.assign({}, a, { name: name, date: date, time: time, service: service, note: note, duration: duration, phone: phone });
         }
         return a;
       });
+      showToast('已儲存修改', 'success');
     } else {
-      // 新增
-      const id = Date.now().toString();
-      appointments.push({ id, name, date, time, service, note, duration, createdAt: Date.now() });
+      var id = Date.now().toString();
+      appointments.push({ id: id, name: name, date: date, time: time, service: service, note: note, duration: duration, phone: phone, createdAt: Date.now() });
+      showToast('已新增預約', 'success');
     }
 
     saveAppointments(appointments);
     resetForm();
-    render();
+    if (viewDay.classList.contains('active')) {
+      selectedDate = date;
+      dayViewTitle.textContent = formatDateFriendly(selectedDate) + ' 當日預約';
+      renderDayView();
+    }
+    if (viewCalendar.classList.contains('active')) {
+      renderCalendar();
+    }
   });
 
   function resetForm() {
     form.reset();
     editingIdInput.value = '';
     submitText.textContent = '新增預約';
-    dateInput.value = getTodayStr();
-    durationInput.value = '';
+    dateInput.value = selectedDate || getTodayStr();
+    if (durationInput) durationInput.value = '';
+    if (phoneInput) phoneInput.value = '';
   }
 
-  appointmentsEl.addEventListener('click', (e) => {
-    const btn = e.target.closest('button');
+  dayViewList.addEventListener('click', function(e) {
+    var btn = e.target.closest('button');
     if (!btn) return;
 
-    const action = btn.dataset.action;
-    const id = btn.dataset.id;
+    var action = btn.dataset.action;
+    var id = btn.dataset.id;
 
     if (action === 'delete') {
-      if (!confirm('確定要刪除這筆預約嗎？')) return;
-      appointments = appointments.filter(a => a.id !== id);
+      if (!confirm('確定要刪除這筆預約？刪除後無法復原。')) return;
+      appointments = appointments.filter(function(a) { return a.id !== id; });
       saveAppointments(appointments);
-      render();
+      renderDayView();
+      if (viewCalendar.classList.contains('active')) renderCalendar();
+      showToast('已刪除預約', 'danger');
     } else if (action === 'edit') {
-      const item = appointments.find(a => a.id === id);
+      var item = appointments.find(function(a) { return a.id === id; });
       if (!item) return;
 
       nameInput.value = item.name;
       dateInput.value = item.date;
-      timeInput.value = item.time;
+      timeInput.value = item.time || '';
       serviceInput.value = item.service;
       noteInput.value = item.note || '';
       durationInput.value = item.duration || '';
       editingIdInput.value = item.id;
+      if (phoneInput) phoneInput.value = item.phone || '';
       submitText.textContent = '儲存修改';
-
-      // 捲到上方表單
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
 
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentTab = tab.dataset.tab;
-      render();
-    });
+  document.getElementById('quickTimeRow').addEventListener('click', function(e) {
+    var btn = e.target.closest('.quick-time-btn');
+    if (!btn) return;
+    var t = btn.dataset.time;
+    if (t) timeInput.value = t;
   });
 
-  searchInput.addEventListener('input', () => {
-    render();
-  });
-
-  openDashboardBtn.addEventListener('click', () => {
-    dashboardOverlay.style.display = 'flex';
-    renderDashboard(dashboardDateInput.value || getTodayStr());
-  });
-
-  closeDashboardBtn.addEventListener('click', () => {
-    dashboardOverlay.style.display = 'none';
-  });
-
-  dashboardOverlay.addEventListener('click', (e) => {
-    if (e.target === dashboardOverlay) {
-      dashboardOverlay.style.display = 'none';
-    }
-  });
-
-  dashboardDateInput.addEventListener('change', () => {
-    renderDashboard(dashboardDateInput.value);
-  });
-
-  // 月曆事件
-  document.getElementById('openCalendar').addEventListener('click', () => {
-    calendarOverlay.style.display = 'flex';
-    renderCalendar();
+  backToCalendarBtn.addEventListener('click', () => {
+    showView('calendar');
   });
 
   calendarPrev.addEventListener('click', () => {
@@ -1211,17 +1143,7 @@
     renderCalendar();
   });
 
-  calendarClose.addEventListener('click', () => {
-    calendarOverlay.style.display = 'none';
-  });
-
-  calendarOverlay.addEventListener('click', (e) => {
-    if (e.target === calendarOverlay) {
-      calendarOverlay.style.display = 'none';
-    }
-  });
-
-  render();
+  showView('calendar');
 </script>
 </body>
 </html>
